@@ -1,0 +1,14 @@
+{
+  "game.players": {
+    "transaction": true,
+    "partition-key": [
+      "id"
+    ],
+    "clustering-key": [],
+    "columns": {
+      "id": "TEXT",
+      "hp": "INT",
+      "attack": "INT"
+    }
+  }
+}
