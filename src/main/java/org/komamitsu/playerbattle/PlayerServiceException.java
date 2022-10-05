@@ -1,4 +1,4 @@
-package org.komamitsu.gamebattle;
+package org.komamitsu.playerbattle;
 
 public class PlayerServiceException extends RuntimeException {
     private final String targetId;

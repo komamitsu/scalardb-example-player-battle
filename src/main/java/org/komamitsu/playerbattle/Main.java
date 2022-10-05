@@ -1,4 +1,4 @@
-package org.komamitsu.gamebattle;
+package org.komamitsu.playerbattle;
 
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.service.TransactionFactory;

@@ -1,4 +1,4 @@
-package org.komamitsu.gamebattle;
+package org.komamitsu.playerbattle;
 
 import com.scalar.db.api.*;
 import com.scalar.db.exception.transaction.CrudException;
@@ -8,7 +8,7 @@ import com.scalar.db.io.Key;
 import java.util.Optional;
 
 public class PlayerService {
-    private static final String NAMESPACE = "game";
+    private static final String NAMESPACE = "player_battle";
     private static final String TABLE_NAME = "players";
     private static final String KEY_ID = "id";
     private static final String KEY_HP = "hp";

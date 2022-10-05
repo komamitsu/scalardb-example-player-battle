@@ -19,7 +19,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("org.komamitsu.gamebattle.Main")
+    mainClass.set("org.komamitsu.playerbattle.Main")
 }
 
 tasks.getByName<Test>("test") {

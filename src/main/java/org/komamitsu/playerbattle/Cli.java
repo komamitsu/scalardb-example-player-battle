@@ -1,4 +1,4 @@
-package org.komamitsu.gamebattle;
+package org.komamitsu.playerbattle;
 
 import picocli.CommandLine;
 

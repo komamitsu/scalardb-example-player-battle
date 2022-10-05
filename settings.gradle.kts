@@ -1,2 +1,2 @@
-rootProject.name = "scalardb-example"
+rootProject.name = "scalardb-example-player-battle"
 

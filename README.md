@@ -1,6 +1,6 @@
 # Scalar DB example
 
-A very simple CLI application to use Scalar DB.
+(WIP) A very simple CLI application to use Scalar DB.
 
 ## Build
 
@@ -19,7 +19,8 @@ $ SCHEMA_LOADER_JAR_PATH=$HOME/src/scalardb/schema-loader/build/libs/scalardb-sc
 ## Execute command
 
 ```
-$ build/install/scalardb-example/bin/scalardb-example -h
+$ cd build/install/scalardb-example-player-battle/
+$ bin/scalardb-example-player-battle -h
 Usage: player-battle [-hV] [--attack=<playerAttack>] -c=<path>
                      [--hp=<playerHp>] --id=<playerId> [--other-id=<otherId>]
                      <commandParam>
@@ -38,22 +39,25 @@ Just a sample application for Scalar DB
 ### Create a player
 
 ```
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties create --id alice --hp 100 --attack 15
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties create --id bob --hp 200 --attack 10
+$ cd build/install/scalardb-example-player-battle/
+$ bin/scalardb-example-player-battle --config scalardb.properties create --id alice --hp 100 --attack 15
+$ bin/scalardb-example-player-battle --config scalardb.properties create --id bob --hp 200 --attack 10
 ```
 
 ### Show a player
 ```
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties get --id alice
+$ cd build/install/scalardb-example-player-battle/
+$ bin/scalardb-example-player-battle --config scalardb.properties get --id alice
 Optional[Player[id=alice, hp=100, attack=15]]
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties get --id bob
+$ bin/scalardb-example-player-battle --config scalardb.properties get --id bob
 Optional[Player[id=bob, hp=200, attack=10]]
 ```
 
 ### Attack another player
 ```
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties attack --id alice --other-id bob
-$ build/install/scalardb-example/bin/scalardb-example --config scalardb.properties get --id bob
+$ cd build/install/scalardb-example-player-battle/
+$ bin/scalardb-example-player-battle --config scalardb.properties attack --id alice --other-id bob
+$ bin/scalardb-example-player-battle --config scalardb.properties get --id bob
 Optional[Player[id=bob, hp=185, attack=10]]
 ```
 

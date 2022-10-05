@@ -1,5 +1,5 @@
 {
-  "game.players": {
+  "playerbattle.players": {
     "transaction": true,
     "partition-key": [
       "id"
