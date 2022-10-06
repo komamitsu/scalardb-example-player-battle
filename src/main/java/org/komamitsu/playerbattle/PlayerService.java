@@ -82,6 +82,27 @@ public class PlayerService {
         }
     }
 
+    public void delete(String id) throws TransactionException {
+        DistributedTransaction tx = transactionManager.start();
+
+        try {
+            Optional<Player> optResult = getInTx(tx, id);
+
+            if (optResult.isPresent()) {
+                tx.delete(Delete.newBuilder()
+                        .namespace(NAMESPACE)
+                        .table(TABLE_NAME)
+                        .partitionKey(Key.ofText(KEY_ID, id))
+                        .build());
+            }
+
+            tx.commit();
+        } catch (Throwable e) {
+            tx.abort();
+            throw new PlayerServiceException(e, id);
+        }
+    }
+
     public void attack(String playerId, String otherId) throws TransactionException {
         DistributedTransaction tx = transactionManager.start();
 
@@ -91,6 +112,25 @@ public class PlayerService {
 
             // Reduce the HP of the other
             putInTx(tx, new Player(other.id(), other.hp() - player.attack(), other.attack()));
+
+            tx.commit();
+        } catch (Throwable e) {
+            tx.abort();
+            throw new PlayerServiceException(e, playerId);
+        }
+    }
+
+    public void bonus(String playerId, String otherId, int bonusThreshold, int bonus) throws TransactionException {
+        DistributedTransaction tx = transactionManager.start();
+
+        try {
+            Player player = getInTx(tx, playerId).get();
+            Player other = getInTx(tx, otherId).get();
+
+            // Get a bonus if the total HPs is less than or equal to the threshold
+            if (player.hp() + other.hp() <= bonusThreshold) {
+                putInTx(tx, new Player(player.id(), player.hp() + bonus, player.attack()));
+            }
 
             tx.commit();
         } catch (Throwable e) {
