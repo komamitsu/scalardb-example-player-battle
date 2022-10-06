@@ -81,4 +81,26 @@ public class IntTestMain {
                 (result) -> Assertions.assertEquals("Optional[Player[id=bob, hp=185, attack=8]]", result.strip())
         );
     }
+
+    @Test
+    void obtainBonus() throws Exception {
+        runCli(new String[] {"--config", configPath, "create", "--id", "alice", "--hp", "100", "--attack", "15"});
+        runCli(new String[] {"--config", configPath, "create", "--id", "bob", "--hp", "200", "--attack", "8"});
+        runCli(new String[] {"--config", configPath, "bonus", "--id", "alice", "--other-id", "bob", "--threshold", "300", "--bonus", "100"});
+        withStdoutCapture(
+                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                (result) -> Assertions.assertEquals("Optional[Player[id=alice, hp=200, attack=15]]", result.strip())
+        );
+    }
+
+    @Test
+    void obtainNoBonus() throws Exception {
+        runCli(new String[] {"--config", configPath, "create", "--id", "alice", "--hp", "100", "--attack", "15"});
+        runCli(new String[] {"--config", configPath, "create", "--id", "bob", "--hp", "200", "--attack", "8"});
+        runCli(new String[] {"--config", configPath, "bonus", "--id", "alice", "--other-id", "bob", "--threshold", "290", "--bonus", "100"});
+        withStdoutCapture(
+                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                (result) -> Assertions.assertEquals("Optional[Player[id=alice, hp=100, attack=15]]", result.strip())
+        );
+    }
 }

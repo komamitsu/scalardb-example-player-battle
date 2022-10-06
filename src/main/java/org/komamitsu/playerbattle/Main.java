@@ -23,5 +23,11 @@ public class Main {
         else if (cli.command instanceof Cli.AttackCommand cmd) {
             playerService.attack(cmd.id(), cmd.otherId());
         }
+        else if (cli.command instanceof Cli.BonusCommand cmd) {
+            playerService.bonus(cmd.id(), cmd.otherId(), cmd.threshold(), cmd.bonus());
+        }
+        else {
+            throw new IllegalArgumentException("Unknown command: " + cli.command);
+        }
     }
 }

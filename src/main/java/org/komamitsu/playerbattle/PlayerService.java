@@ -98,4 +98,23 @@ public class PlayerService {
             throw new PlayerServiceException(e, playerId);
         }
     }
+
+    public void bonus(String playerId, String otherId, int bonusThreshold, int bonus) throws TransactionException {
+        DistributedTransaction tx = transactionManager.start();
+
+        try {
+            Player player = getInTx(tx, playerId).get();
+            Player other = getInTx(tx, otherId).get();
+
+            // Get a bonus if the total HPs is less than or equal to the threshold
+            if (player.hp() + other.hp() <= bonusThreshold) {
+                putInTx(tx, new Player(player.id(), player.hp() + bonus, player.attack()));
+            }
+
+            tx.commit();
+        } catch (Throwable e) {
+            tx.abort();
+            throw new PlayerServiceException(e, playerId);
+        }
+    }
 }
