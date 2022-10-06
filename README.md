@@ -67,3 +67,7 @@ Optional[Player[id=bob, hp=185, attack=10]]
 $ SCALARDB_EXAMPLE_IT_CONFIG_PATH=scalardb.properties SCALARDB_EXAMPLE_IT_SCHEMA_CONFIG_PATH=player-battle.json ./gradlew integrationTest --info
 ```
 
+## TODO
+
+- CI
+

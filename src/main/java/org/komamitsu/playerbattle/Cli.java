@@ -16,13 +16,15 @@ public class Cli implements Callable<Void> {
 
     record GetCommand(String id) implements Command {}
 
+    record DeleteCommand(String id) implements Command {}
+
     record AttackCommand(String id, String otherId) implements Command {}
 
     record BonusCommand(String id, String otherId, int threshold, int bonus) implements Command {}
 
     public Command command;
 
-    @CommandLine.Parameters(index = "0") String commandParam;
+    @CommandLine.Parameters(index = "0", description = "create|delete|get|attack|bonus") String commandParam;
 
     @CommandLine.Option(names = {"-c", "--config"}, description = "Scalar DB config file", required = true)
     Path path;
@@ -60,6 +62,7 @@ public class Cli implements Callable<Void> {
                     playerId,
                     notNull("hp", playerHp),
                     notNull("attack", playerAttack));
+            case "delete" -> command = new DeleteCommand(playerId);
             case "get" -> command = new GetCommand(playerId);
             case "attack" -> command = new AttackCommand(
                     playerId,

@@ -82,6 +82,27 @@ public class PlayerService {
         }
     }
 
+    public void delete(String id) throws TransactionException {
+        DistributedTransaction tx = transactionManager.start();
+
+        try {
+            Optional<Player> optResult = getInTx(tx, id);
+
+            if (optResult.isPresent()) {
+                tx.delete(Delete.newBuilder()
+                        .namespace(NAMESPACE)
+                        .table(TABLE_NAME)
+                        .partitionKey(Key.ofText(KEY_ID, id))
+                        .build());
+            }
+
+            tx.commit();
+        } catch (Throwable e) {
+            tx.abort();
+            throw new PlayerServiceException(e, id);
+        }
+    }
+
     public void attack(String playerId, String otherId) throws TransactionException {
         DistributedTransaction tx = transactionManager.start();
 
