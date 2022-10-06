@@ -56,7 +56,5 @@ val integrationTest = task<Test>("integrationTest") {
 
     testClassesDirs = sourceSets["intTest"].output.classesDirs
     classpath = sourceSets["intTest"].runtimeClasspath
-
-
 }
 
