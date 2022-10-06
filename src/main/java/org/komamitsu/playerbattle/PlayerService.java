@@ -39,7 +39,6 @@ public class PlayerService {
                 .table(TABLE_NAME)
                 .partitionKey(Key.ofText(KEY_ID, player.id()));
 
-        // To avoid blind writes
         Optional<Player> old = getInTx(tx, player.id());
         if (old.isEmpty() || old.get().hp() != player.hp()) {
             builder.intValue(KEY_HP, player.hp());
