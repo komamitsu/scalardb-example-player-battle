@@ -1,10 +1,8 @@
 package org.komamitsu.playerbattle;
 
-import com.scalar.db.exception.transaction.CommitConflictException;
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.schemaloader.SchemaLoader;
 import com.scalar.db.schemaloader.SchemaLoaderException;
-import com.scalar.db.transaction.consensuscommit.UncommittedRecordException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
