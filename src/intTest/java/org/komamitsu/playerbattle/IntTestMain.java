@@ -3,10 +3,7 @@ package org.komamitsu.playerbattle;
 import com.scalar.db.exception.transaction.TransactionException;
 import com.scalar.db.schemaloader.SchemaLoader;
 import com.scalar.db.schemaloader.SchemaLoaderException;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -126,61 +124,81 @@ public class IntTestMain {
 
     private record Pair<F, S>(F first, S second) {}
 
+    private PlayerServiceException findPlayerServiceException(Throwable origEx) {
+        Throwable ex = origEx;
+        while (true) {
+            if (ex == null) {
+                return null;
+            }
+            if (ex instanceof PlayerServiceException playerServiceException) {
+                return playerServiceException;
+            }
+            ex = ex.getCause();
+        }
+    }
+
     @Test
     void runBonusConcurrently() throws Exception {
         ExecutorService executorService = Executors.newCachedThreadPool();
         Pattern pattern = Pattern.compile("Optional\\[Player\\[id=\\w+, hp=(?<hp>\\d+), attack=\\d+\\]\\]");
 
-        Map<Pair<Class<? extends Throwable>, String>, Integer> errorTable = new HashMap();
+        Map<Pair<Class<? extends Throwable>, String>, Integer> errorTable = new HashMap<>();
 
+        Random random = new Random();
         for (int i = 0; i < 40; i++) {
             String aliceId = "alice" + i;
             String bobId = "bob" + i;
 
-                runCli(new String[] {"--config", configPath, "delete", "--id", aliceId});
-                runCli(new String[]{"--config", configPath, "create", "--id", aliceId, "--hp", "100", "--attack", "15"});
+            runCli(new String[] {"--config", configPath, "delete", "--id", aliceId});
+            runCli(new String[]{"--config", configPath, "create", "--id", aliceId, "--hp", "100", "--attack", "15"});
 
-                runCli(new String[] {"--config", configPath, "delete", "--id", bobId});
-                runCli(new String[]{"--config", configPath, "create", "--id", bobId, "--hp", "200", "--attack", "8"});
+            runCli(new String[] {"--config", configPath, "delete", "--id", bobId});
+            runCli(new String[]{"--config", configPath, "create", "--id", bobId, "--hp", "200", "--attack", "8"});
 
-                try {
-                    Future<?> futureForAlice = executorService.submit(() ->
-                            runCli(new String[]{"--config", configPath, "bonus", "--id", aliceId, "--other-id", bobId, "--threshold", "300", "--bonus", "100"}));
-                    Future<?> futureForBob = executorService.submit(() ->
-                            runCli(new String[]{"--config", configPath, "bonus", "--id", bobId, "--other-id", aliceId, "--threshold", "300", "--bonus", "100"}));
-                    futureForAlice.get(60, TimeUnit.SECONDS);
-                    futureForBob.get(60, TimeUnit.SECONDS);
+            Future<?> futureForAlice = executorService.submit(() ->
+                    runCli(new String[]{"--config", configPath, "bonus", "--id", aliceId, "--other-id", bobId, "--threshold", "300", "--bonus", "100"}));
+
+            // This might be a freaky test, but most of the cases can result in conflicts without this wait...
+            TimeUnit.MILLISECONDS.sleep(random.nextInt(100));
+
+            Future<?> futureForBob = executorService.submit(() ->
+                    runCli(new String[]{"--config", configPath, "bonus", "--id", bobId, "--other-id", aliceId, "--threshold", "300", "--bonus", "100"}));
+            try {
+                futureForAlice.get(60, TimeUnit.SECONDS);
+                futureForBob.get(60, TimeUnit.SECONDS);
+            }
+            catch (Throwable e) {
+                PlayerServiceException playerServiceEx = findPlayerServiceException(e);
+
+                if (playerServiceEx != null) {
+                    Throwable cause = playerServiceEx.getCause();
+                    Pair<Class<? extends Throwable>, String> errorKey = new Pair<>(cause.getClass(), cause.getMessage());
+                    Integer v = errorTable.computeIfAbsent(errorKey, k -> 0);
+                    errorTable.put(errorKey, v + 1);
+                    continue;
                 }
-                catch (ExecutionException e) {
-                    if (e.getCause() instanceof PlayerServiceException playerServiceEx) {
-                        Throwable cause = playerServiceEx.getCause();
-                        Pair<Class<? extends Throwable>, String> errorKey = new Pair<>(cause.getClass(), cause.getMessage());
-                        Integer v = errorTable.computeIfAbsent(errorKey, k -> 0);
-                        errorTable.put(errorKey, v + 1);
-                        continue;
+                throw e;
+            }
+
+            AtomicReference<Integer> hpOfAlice = new AtomicReference<>();
+            withStdoutCapture(
+                    () -> runCli(new String[] {"--config", configPath, "show", "--id", aliceId}),
+                    (result) -> {
+                        Matcher matcher = pattern.matcher(result.strip());
+                        assertTrue(matcher.find());
+                        hpOfAlice.set(Integer.parseInt(matcher.group("hp")));
                     }
-                    throw e;
-                }
-
-                AtomicReference<Integer> hpOfAlice = new AtomicReference<>();
-                withStdoutCapture(
-                        () -> runCli(new String[] {"--config", configPath, "show", "--id", aliceId}),
-                        (result) -> {
-                            Matcher matcher = pattern.matcher(result.strip());
-                            assertTrue(matcher.find());
-                            hpOfAlice.set(Integer.parseInt(matcher.group("hp")));
-                        }
-                );
-                AtomicReference<Integer> hpOfBob = new AtomicReference<>();
-                withStdoutCapture(
-                        () -> runCli(new String[] {"--config", configPath, "show", "--id", bobId}),
-                        (result) -> {
-                            Matcher matcher = pattern.matcher(result.strip());
-                            assertTrue(matcher.find());
-                            hpOfBob.set(Integer.parseInt(matcher.group("hp")));
-                        }
-                );
-                assertEquals(100 + 200 + 100, hpOfAlice.get() + hpOfBob.get());
+            );
+            AtomicReference<Integer> hpOfBob = new AtomicReference<>();
+            withStdoutCapture(
+                    () -> runCli(new String[] {"--config", configPath, "show", "--id", bobId}),
+                    (result) -> {
+                        Matcher matcher = pattern.matcher(result.strip());
+                        assertTrue(matcher.find());
+                        hpOfBob.set(Integer.parseInt(matcher.group("hp")));
+                    }
+            );
+            assertEquals(100 + 200 + 100, hpOfAlice.get() + hpOfBob.get());
         }
 
         System.out.println("errorTable: " + errorTable);

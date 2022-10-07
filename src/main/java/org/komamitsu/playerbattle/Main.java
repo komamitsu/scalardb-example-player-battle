@@ -9,8 +9,10 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException, TransactionException {
         Cli cli = new Cli();
-        CommandLine commandLine = new CommandLine(cli);
-        commandLine.parseArgs(args);
-        new CommandLine(cli).execute(args);
+        CommandLine commandLine = new CommandLine(cli).setExecutionExceptionHandler((ex, cmdline, parseResult) -> {
+            // To avoid being captured in picocli.CommandLine.handleUnhandled
+            throw new Error(ex);
+        });
+        commandLine.execute(args);
     }
 }
