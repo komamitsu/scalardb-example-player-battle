@@ -65,9 +65,9 @@ public class IntTestMain {
     }
 
     @Test
-    void getButNotFound() throws Exception {
+    void showButNotFound() throws Exception {
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "alice"}),
                 (result) -> Assertions.assertEquals("Optional.empty", result.strip())
         );
     }
@@ -76,7 +76,7 @@ public class IntTestMain {
     void create() throws Exception {
         runCli(new String[] {"--config", configPath, "create", "--id", "alice", "--hp", "100", "--attack", "15"});
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "alice"}),
                 (result) -> Assertions.assertEquals("Optional[Player[id=alice, hp=100, attack=15]]", result.strip())
         );
     }
@@ -86,7 +86,7 @@ public class IntTestMain {
         runCli(new String[] {"--config", configPath, "create", "--id", "alice", "--hp", "100", "--attack", "15"});
         runCli(new String[] {"--config", configPath, "delete", "--id", "alice"});
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "alice"}),
                 (result) -> Assertions.assertEquals("Optional.empty", result.strip())
         );
     }
@@ -97,7 +97,7 @@ public class IntTestMain {
         runCli(new String[] {"--config", configPath, "create", "--id", "bob", "--hp", "200", "--attack", "8"});
         runCli(new String[] {"--config", configPath, "attack", "--id", "alice", "--other-id", "bob"});
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "bob"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "bob"}),
                 (result) -> Assertions.assertEquals("Optional[Player[id=bob, hp=185, attack=8]]", result.strip())
         );
     }
@@ -108,7 +108,7 @@ public class IntTestMain {
         runCli(new String[] {"--config", configPath, "create", "--id", "bob", "--hp", "200", "--attack", "8"});
         runCli(new String[] {"--config", configPath, "bonus", "--id", "alice", "--other-id", "bob", "--threshold", "300", "--bonus", "100"});
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "alice"}),
                 (result) -> Assertions.assertEquals("Optional[Player[id=alice, hp=200, attack=15]]", result.strip())
         );
     }
@@ -119,7 +119,7 @@ public class IntTestMain {
         runCli(new String[] {"--config", configPath, "create", "--id", "bob", "--hp", "200", "--attack", "8"});
         runCli(new String[] {"--config", configPath, "bonus", "--id", "alice", "--other-id", "bob", "--threshold", "290", "--bonus", "100"});
         withStdoutCapture(
-                () -> runCli(new String[] {"--config", configPath, "get", "--id", "alice"}),
+                () -> runCli(new String[] {"--config", configPath, "show", "--id", "alice"}),
                 (result) -> Assertions.assertEquals("Optional[Player[id=alice, hp=100, attack=15]]", result.strip())
         );
     }
@@ -164,7 +164,7 @@ public class IntTestMain {
 
                 AtomicReference<Integer> hpOfAlice = new AtomicReference<>();
                 withStdoutCapture(
-                        () -> runCli(new String[] {"--config", configPath, "get", "--id", aliceId}),
+                        () -> runCli(new String[] {"--config", configPath, "show", "--id", aliceId}),
                         (result) -> {
                             Matcher matcher = pattern.matcher(result.strip());
                             assertTrue(matcher.find());
@@ -173,7 +173,7 @@ public class IntTestMain {
                 );
                 AtomicReference<Integer> hpOfBob = new AtomicReference<>();
                 withStdoutCapture(
-                        () -> runCli(new String[] {"--config", configPath, "get", "--id", bobId}),
+                        () -> runCli(new String[] {"--config", configPath, "show", "--id", bobId}),
                         (result) -> {
                             Matcher matcher = pattern.matcher(result.strip());
                             assertTrue(matcher.find());
